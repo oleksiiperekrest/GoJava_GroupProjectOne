@@ -1,0 +1,83 @@
+<resources>
+    <string name="app_name">YouTube Analytics</string>
+    <string name="action_settings">Настройки</string>
+
+    <!--наименование вкладок-->
+    <string name="titleGlobalInformation">Данные о канале</string>
+    <string name="titleCompareGlobalInformation">Сравнить каналы по данным</string>
+    <string name="titleSortChannelsData">Сортировать каналы</string>
+    <string name="titleMediaResonance">Резонанс</string>
+    <string name="titleCompareMediaResonance">Сравнить по резонансу</string>
+    <string name="titleSortMediaResonance">Сортировать по резонансу</string>
+
+    <!--кнопки, описание-->
+    <string name="btnGetData">Запрос</string>
+    <string name="tvSelectTypeSort">Сортировать по</string>
+    <string name="ok">Ок</string>
+    <string name="cancel">Отмена</string>
+    <string name="etArrayIdChannel">Введите id каналов YouTube через пробел</string>
+
+    <!--поля ввода-->
+    <string name="etChannelId">ChannelId</string>
+    <string name="etChannelIdOne">Первый channelId</string>
+    <string name="etChannelIdTwo">Второй channelId</string>
+    <string name="tvChannelName">Имя канала</string>
+    <string name="tvDateCreationChannel">Дата создания канала</string>
+    <string name="tvNumberSubscribers">Кол-во подписчиков</string>
+    <string name="tvNumberVideos">Кол-во видео на канале</string>
+    <string name="tvNumberViews">Кол-во просмотров</string>
+    <string name="tvNumberComments">Кол-во комментариев</string>
+
+    <!--сокращения для рециклера-->
+    <string name="chName">имя</string>
+    <string name="chDate">дата</string>
+    <string name="chSubs">подписчики</string>
+    <string name="chVideo">видео</string>
+    <string name="chView">просмотры</string>
+    <string name="chComment">комментарии</string>
+
+    <!--название настроек-->
+    <string name="setTitleWayFolder">Имя папки с кэшем</string>
+    <string name="setNameFolder">my_cache</string>
+    <string name="setDialogWayFolder">Укажите имя папки с кешем</string>
+    <string name="setCacheYes">Кеш сохраняется</string>
+    <string name="setCacheNo">Кеш не сохраняется</string>
+    <string name="setTitleCache">Хранение кеша</string>
+    <string name="setTimeYes">Время будет показано</string>
+    <string name="setTimeNo">Время не отображается</string>
+    <string name="setTitleTime">Время на выполнение запроса</string>
+    <string name="btnAddArray">Ввести массив</string>
+    <string name="btnLoadExample">Загрузить пример</string>
+
+
+    <!--toasts, progressbar-->
+    <string name="toastNoInternet">Нет соединения с интернетом</string>
+    <string name="toastChannelNotFound">Канал не найден</string>
+    <string name="msgProgressDialog">Получение данных...</string>
+    <string name="dataCache">Данные взяты из кеша</string>
+
+    <!--стартовый экран-->
+    <string name="tvEmail">m.fomichov@gmail.com simurashka@gmail.com</string>
+    <string name="tvDeveloper">Project1 Group Development</string>
+    <string name="tvVersion">version 1.0</string>
+
+
+    <!--массив видов сортировок-->
+    <string-array name="sort_array">
+        <item>имени канала</item>
+        <item>дате создания</item>
+        <item>кол-ву подписчиков</item>
+        <item>кол-ву видео на канале</item>
+        <item>кол-ву просмотров всех видео</item>
+    </string-array>
+
+    <!--массив видов сортировок-->
+    <string-array name="sort_array_comments">
+        <item>имени канала</item>
+        <item>дате создания</item>
+        <item>кол-ву подписчиков</item>
+        <item>кол-ву видео на канале</item>
+        <item>кол-ву просмотров всех видео</item>
+        <item>кол-ву комментариев</item>
+    </string-array>
+</resources>

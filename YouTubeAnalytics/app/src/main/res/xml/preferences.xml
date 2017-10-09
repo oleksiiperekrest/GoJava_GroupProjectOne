@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:key="setSaveCache"
+        android:summaryOff="@string/setCacheNo"
+        android:summaryOn="@string/setCacheYes"
+        android:title="@string/setTitleCache" />
+
+    <EditTextPreference
+        android:dialogTitle="@string/setDialogWayFolder"
+        android:key="setNameFolder"
+        android:defaultValue="my_cache"
+        android:dependency="setSaveCache"
+        android:summary="@string/setNameFolder"
+        android:title="@string/setTitleWayFolder" />
+
+    <SwitchPreference
+        android:key="setSaveTime"
+        android:defaultValue="true"
+        android:summaryOff="@string/setTimeNo"
+        android:summaryOn="@string/setTimeYes"
+        android:title="@string/setTitleTime" />
+
+</PreferenceScreen>
