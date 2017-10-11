@@ -320,9 +320,9 @@ public class ChannelSort extends Fragment {
             if (channelIdArray.size() == 1 && channelIdArray.get(0).equals("")) {
                 Toast.makeText(getContext(), getResources().getString((R.string.toastChannelNotFound)), Toast.LENGTH_LONG).show();
                 // Здесь нужно очистить recyclerView
-
+                tubeList.clear();
+                adapter.notifyDataSetChanged();
             } else {
-
                 try {
                     startLoadData();
                 } catch (InterruptedException e) {
