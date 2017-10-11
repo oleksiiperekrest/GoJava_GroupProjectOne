@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,12 +21,16 @@ import com.gmail.fomichov.m.youtubeanalytics.R;
 import com.gmail.fomichov.m.youtubeanalytics.json.json_channel.ChannelYouTube;
 import com.gmail.fomichov.m.youtubeanalytics.request.ChannelsRequest;
 import com.gmail.fomichov.m.youtubeanalytics.request.CommentsRequest;
+import com.gmail.fomichov.m.youtubeanalytics.utils.CheckForChannel;
 import com.gmail.fomichov.m.youtubeanalytics.utils.MyDateUtils;
 import com.gmail.fomichov.m.youtubeanalytics.utils.MyFileUtils;
 import com.gmail.fomichov.m.youtubeanalytics.utils.MyLog;
 import com.gmail.fomichov.m.youtubeanalytics.utils.TestInternet;
+import com.squareup.picasso.Picasso;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 public class ChannelInfo extends Fragment {
     private ChannelsRequest channelsRequest;
@@ -33,14 +38,16 @@ public class ChannelInfo extends Fragment {
     private ChannelYouTube tube;
     private boolean cache;
     private EditText etChannelId;
-    private static final String TYPE_TASK = "typeTask";
-    private boolean typeTask;
+    private static final String TYPE_TASK = "withMediaResonance";
+    private boolean withMediaResonance;
     private View myView;
+    private String channelId;
+    private boolean checkedIdOk = true;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        typeTask = getArguments().getBoolean("typeTask");
-        if (typeTask) {
+        withMediaResonance = getArguments().getBoolean("withMediaResonance");
+        if (withMediaResonance) {
             myView = inflater.inflate(R.layout.frag_mediaresonance, container, false);
         } else {
             myView = inflater.inflate(R.layout.frag_globalinfo, container, false);
@@ -55,18 +62,45 @@ public class ChannelInfo extends Fragment {
         final TextView tvNumberVideosResult = (TextView) myView.findViewById(R.id.tvNumberVideosResult);
         final TextView tvNumberViewsResult = (TextView) myView.findViewById(R.id.tvNumberViewsResult);
         final TextView tvNumberCommentsResult = (TextView) myView.findViewById(R.id.tvNumberCommentsResult);
+        final ImageView ivHighImageChannel = (ImageView) myView.findViewById(R.id.ivHighImageChannel);
+
         Button btnGetResult = (Button) myView.findViewById(R.id.btnGetResult);
 
         btnGetResult.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyLog.showLog(typeTask + "");
+                MyLog.showLog(withMediaResonance + "");
+
+                final FutureTask<String> checkId = new FutureTask<>(new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        if (etChannelId.getText().toString().equals("")) return CheckForChannel.BADCHANNEL;
+                        if (TestInternet.isOnline(getContext())) {
+                            return CheckForChannel.getChannelId(etChannelId.getText().toString());
+                        } else {
+                            return etChannelId.getText().toString();
+                        }
+                    }
+                });
+
+                new Thread(checkId).start();
+
                 try {
-                    boolean typeTaskIf; // принмает разные типы условий в зависимости от задачи
-                    if (typeTask) {
-                        typeTaskIf = MainActivity.sharedPreferences.getBoolean("setSaveCache", false) && MyFileUtils.getFolder() && !MyFileUtils.findIdChannelFile(etChannelId.getText().toString()) && getCountComment();
+                    channelId = checkId.get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+
+                checkedIdOk = !channelId.equals(CheckForChannel.BADCHANNEL);
+
+                try {
+                    boolean typeTaskIf; // принимает разные типы условий в зависимости от задачи
+                    if (withMediaResonance && checkedIdOk) {
+                        typeTaskIf = MainActivity.sharedPreferences.getBoolean("setSaveCache", false) && MyFileUtils.getFolder() && !MyFileUtils.findIdChannelFile(channelId) && getCountComment();
                     } else {
-                        typeTaskIf = MainActivity.sharedPreferences.getBoolean("setSaveCache", false) && MyFileUtils.getFolder() && !MyFileUtils.findIdChannelFile(etChannelId.getText().toString());
+                        typeTaskIf = MainActivity.sharedPreferences.getBoolean("setSaveCache", false) && MyFileUtils.getFolder() && !MyFileUtils.findIdChannelFile(channelId);
                     }
                     if (typeTaskIf) {
                         progressDialog.show();
@@ -77,7 +111,7 @@ public class ChannelInfo extends Fragment {
                                     MainActivity.startTime = System.currentTimeMillis();
                                 }
                                 try {
-                                    tube = MyFileUtils.getDataIdChannel(etChannelId.getText().toString());
+                                    tube = MyFileUtils.getDataIdChannel(channelId);
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
@@ -94,14 +128,16 @@ public class ChannelInfo extends Fragment {
                                 if (MainActivity.sharedPreferences.getBoolean("setSaveTime", false)) {
                                     MainActivity.startTime = System.currentTimeMillis();
                                 }
-                                channelsRequest = new ChannelsRequest(etChannelId.getText().toString());
-                                try {
-                                    tube = channelsRequest.getSingleObject();
-                                    if (typeTask) {
-                                        tube.setCountComments(new CommentsRequest().getCountComment(tube.items.get(0).contentDetails.relatedPlaylists.uploads));
+                                if (checkedIdOk) {
+                                    channelsRequest = new ChannelsRequest(channelId);
+                                    try {
+                                        tube = channelsRequest.getSingleObject();
+                                        if (withMediaResonance) {
+                                            tube.setCountComments(new CommentsRequest().getCountComment(tube.items.get(0).contentDetails.relatedPlaylists.uploads));
+                                        }
+                                    } catch (ExecutionException | InterruptedException e) {
+                                        e.printStackTrace();
                                     }
-                                } catch (ExecutionException | InterruptedException e) {
-                                    e.printStackTrace();
                                 }
                                 progressDialog.dismiss();
                                 cache = false; // текст будет красным
@@ -125,7 +161,7 @@ public class ChannelInfo extends Fragment {
                                 tvNumberSubscribersResult.setTextColor(Color.RED);
                                 tvNumberVideosResult.setTextColor(Color.RED);
                                 tvNumberViewsResult.setTextColor(Color.RED);
-                                if (typeTask) {
+                                if (withMediaResonance) {
                                     tvNumberCommentsResult.setTextColor(Color.RED);
                                 }
                             } else {
@@ -134,32 +170,48 @@ public class ChannelInfo extends Fragment {
                                 tvNumberSubscribersResult.setTextColor(Color.BLUE);
                                 tvNumberVideosResult.setTextColor(Color.BLUE);
                                 tvNumberViewsResult.setTextColor(Color.BLUE);
-                                if (typeTask) {
+                                if (withMediaResonance) {
                                     tvNumberCommentsResult.setTextColor(Color.BLUE);
                                 }
                             }
-                            tvChannelNameResult.setText(tube.items.get(0).snippet.title);
-                            tvDateCreationChannelResult.setText(String.valueOf(MyDateUtils.convertStringToDate(tube.items.get(0).snippet.publishedAt)));
-                            tvNumberSubscribersResult.setText(String.valueOf(tube.items.get(0).statistics.subscriberCount));
-                            tvNumberVideosResult.setText(String.valueOf(tube.items.get(0).statistics.videoCount));
-                            tvNumberViewsResult.setText(String.valueOf(tube.items.get(0).statistics.viewCount));
-                            if (typeTask) {
-                                tvNumberCommentsResult.setText(String.valueOf(tube.countComments));
-                            }
-                            if (MainActivity.sharedPreferences.getBoolean("setSaveTime", false)) {
-                                MainActivity.endTime = System.currentTimeMillis();
-                                Toast.makeText(getContext(), "load data " + (MainActivity.endTime - MainActivity.startTime) + "ms", Toast.LENGTH_LONG).show();
-                            }
-                            if (MainActivity.sharedPreferences.getBoolean("setSaveCache", false)) {
-                                if (!MyFileUtils.getFolder()) { // если папки еще нет то создаем, соответсвенно проверку на наличие такого же файла не проводим
-                                    MyFileUtils.writeFileIdChannel(JSON.toJSONString(tube), etChannelId.getText().toString(), getContext(), getActivity());
-                                } else if (MyFileUtils.findIdChannelFile(etChannelId.getText().toString())) { // проверяем на наличие файла с таким названием, если нету то пишем файл
-                                    MyFileUtils.writeFileIdChannel(JSON.toJSONString(tube), etChannelId.getText().toString(), getContext(), getActivity());
+                            if (checkedIdOk) {
+                                etChannelId.setText(tube.items.get(0).id);
+                                tvChannelNameResult.setText(tube.items.get(0).snippet.title);
+                                tvDateCreationChannelResult.setText(String.valueOf(MyDateUtils.convertStringToDate(tube.items.get(0).snippet.publishedAt)));
+                                tvNumberSubscribersResult.setText(String.valueOf(tube.items.get(0).statistics.subscriberCount));
+                                tvNumberVideosResult.setText(String.valueOf(tube.items.get(0).statistics.videoCount));
+                                tvNumberViewsResult.setText(String.valueOf(tube.items.get(0).statistics.viewCount));
+                                Picasso.with(getContext()).load(tube.items.get(0).snippet.thumbnails.high.url).into(ivHighImageChannel);
+
+                                if (withMediaResonance) {
+                                    tvNumberCommentsResult.setText(String.valueOf(tube.countComments));
                                 }
-                                if (typeTask) {
-                                    if (!MyFileUtils.findIdChannelFile(etChannelId.getText().toString()) && !getCountComment()) { // если есть файл и в нем количество коментов равно 0
+                                if (MainActivity.sharedPreferences.getBoolean("setSaveTime", false)) {
+                                    MainActivity.endTime = System.currentTimeMillis();
+                                    Toast.makeText(getContext(), "load data " + (MainActivity.endTime - MainActivity.startTime) + "ms", Toast.LENGTH_LONG).show();
+                                }
+                                if (MainActivity.sharedPreferences.getBoolean("setSaveCache", false)) {
+                                    if (!MyFileUtils.getFolder()) { // если папки еще нет то создаем, соответсвенно проверку на наличие такого же файла не проводим
+                                        MyFileUtils.writeFileIdChannel(JSON.toJSONString(tube), etChannelId.getText().toString(), getContext(), getActivity());
+                                    } else if (MyFileUtils.findIdChannelFile(etChannelId.getText().toString())) { // проверяем на наличие файла с таким названием, если нету то пишем файл
                                         MyFileUtils.writeFileIdChannel(JSON.toJSONString(tube), etChannelId.getText().toString(), getContext(), getActivity());
                                     }
+                                    if (withMediaResonance) {
+                                        if (!MyFileUtils.findIdChannelFile(etChannelId.getText().toString()) && !getCountComment()) { // если есть файл и в нем количество коментов равно 0
+                                            MyFileUtils.writeFileIdChannel(JSON.toJSONString(tube), etChannelId.getText().toString(), getContext(), getActivity());
+                                        }
+                                    }
+                                }
+                            } else {
+                                Toast.makeText(getContext(), getResources().getString((R.string.toastChannelNotFound)), Toast.LENGTH_LONG).show();
+                                tvChannelNameResult.setText("");
+                                tvDateCreationChannelResult.setText("");
+                                tvNumberSubscribersResult.setText("");
+                                tvNumberVideosResult.setText("");
+                                tvNumberViewsResult.setText("");
+                                ivHighImageChannel.setImageResource(R.drawable.not_found_24dp);
+                                if (withMediaResonance) {
+                                    tvNumberCommentsResult.setText("");
                                 }
                             }
                         } catch (Exception e) {

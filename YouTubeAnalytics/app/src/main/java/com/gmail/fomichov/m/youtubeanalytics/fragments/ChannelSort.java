@@ -93,7 +93,7 @@ public class ChannelSort extends Fragment {
                 channelIdArray.add("UCHFNDph3zTYh8-hwofOVXsg");
                 channelIdArray.add("UCSpU8Y1aoqBSAwh8DBpiM9A");
                 channelIdArray.add("UCRP4EhX1Op-jL7D87PB3qhQ");
-                channelIdArray.add("UCkUe2e1YuRtBRRaP2XTupwg");
+                channelIdArray.add("UCBa659QWEk1AI4Tg--mrJ2A");
                 try {
                     startLoadData();
                 } catch (InterruptedException e) {
@@ -317,10 +317,17 @@ public class ChannelSort extends Fragment {
         public void onReceive(Context context, Intent intent) {
             channelIdArray.clear();
             channelIdArray = new ArrayList(Arrays.asList(intent.getStringExtra("array").split(" ")));
-            try {
-                startLoadData();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if (channelIdArray.size() == 1 && channelIdArray.get(0).equals("")) {
+                Toast.makeText(getContext(), getResources().getString((R.string.toastChannelNotFound)), Toast.LENGTH_LONG).show();
+                // Здесь нужно очистить recyclerView
+
+            } else {
+
+                try {
+                    startLoadData();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     };

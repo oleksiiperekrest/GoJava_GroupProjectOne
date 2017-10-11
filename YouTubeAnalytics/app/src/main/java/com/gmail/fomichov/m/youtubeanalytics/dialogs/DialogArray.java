@@ -12,6 +12,12 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.gmail.fomichov.m.youtubeanalytics.R;
+import com.gmail.fomichov.m.youtubeanalytics.utils.CheckForChannel;
+import com.gmail.fomichov.m.youtubeanalytics.utils.TestInternet;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 public class DialogArray extends DialogFragment {
     private EditText etArrayIdChannel;
@@ -34,7 +40,14 @@ public class DialogArray extends DialogFragment {
                 } else {
                     intent = new Intent("pressButtonOkInDialogGlobal");
                 }
-                intent.putExtra("array", etArrayIdChannel.getText().toString());
+
+                try {
+                    intent.putExtra("array", checkForChannels(etArrayIdChannel.getText().toString()));
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(intent);
                 dialog.dismiss();
             }
@@ -46,6 +59,30 @@ public class DialogArray extends DialogFragment {
             }
         });
         return builder.create();
+    }
+
+    private String checkForChannels(String channelsString) throws ExecutionException, InterruptedException {
+        final String channels = channelsString;
+        final FutureTask<String> checkId = new FutureTask<>(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                StringBuilder stringBuilder = new StringBuilder();
+                String[] channelsArray = channels.split(" ");
+                String checkingChannel;
+                for (String channel : channelsArray) {
+                    checkingChannel = CheckForChannel.getChannelId(channel);
+                    if (!checkingChannel.equals(CheckForChannel.BADCHANNEL)) {
+                        stringBuilder.append(checkingChannel + " ");
+                    }
+                }
+                return stringBuilder.toString();
+            }
+        });
+
+        new Thread(checkId).start();
+        String checkedId = checkId.get();
+            return checkedId;
+
     }
 
     public static DialogArray newInstance(Boolean comments) {

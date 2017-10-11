@@ -25,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/etChannelIdTwo"
-            android:text="UCkUe2e1YuRtBRRaP2XTupwg"
+            android:text="UCBa659QWEk1AI4Tg--mrJ2A"
             android:textSize="14sp" />
     </android.support.design.widget.TextInputLayout>
 
